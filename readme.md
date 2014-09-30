@@ -7,7 +7,7 @@ A Python module which provides a common interface for reading or writing data to
 Open a file or process, accessing them the same way
 
     from byteaccess import FileByteAccessContext,
-                           WinMemByteAccessContext
+                           MemByteAccessContext
 
     if location == 'file':
         context = FileByteAccessContext('file.txt')
@@ -20,4 +20,4 @@ Open a file or process, accessing them the same way
 
 ## License
 
-bytearray is free software released under the BSD 2-clause license.
+ByteAccess is free software released under the BSD 2-clause license.

@@ -37,7 +37,7 @@ def find_process(name):
         process_entry = ProcessEntry32()
         process_entry.dwSize = sizeof(ProcessEntry32)
 
-        if Process32First(hTH32Snapshot, byref(process_entry)) is False:
+        if Process32First(hTH32Snapshot, byref(process_entry)) == False:
             raise Exception("Failed iterating processes while looking for '{0}'"
                             .format(name))
 
@@ -45,7 +45,7 @@ def find_process(name):
             if process_entry.szExeFile == name:
                 return process_entry
 
-            if Process32Next(hTH32Snapshot, byref(process_entry)) is False:
+            if Process32Next(hTH32Snapshot, byref(process_entry)) == False:
                 break
 
         raise Exception("'{0}' is not running".format(name))

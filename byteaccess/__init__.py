@@ -14,12 +14,12 @@ identical data from different locations.
 Example usage:
 
     from byteaccess import FileByteAccessContext,
-                           WinMemByteAccessContext
+                           MemByteAccessContext
 
     if location == 'file':
         context = FileByteAccessContext('file.txt')
     elif location == 'mem'
-        context = WinMemByteAccessContext('process.exe')
+        context = MemByteAccessContext('process.exe')
      
     foo = context.ByteAccess(offset, size)
     foo.write_bytes(0, b'somedata')
@@ -89,12 +89,7 @@ class BaseByteAccess(metaclass=abc.ABCMeta):
 
 class FileByteAccessContext(object):
 
-    """Context for creating ByteAccesses which read and write to a specific file.
-
-    Usage:
-        context = FileByteAccessContext('file.txt')
-        foo = context.ByteAccess(offset, size)
-    """
+    """Context for creating ByteAccesses which read and write to a specific file."""
 
     def __init__(self, filepath):
         import mmap
@@ -131,12 +126,7 @@ p = platform.system()
 if p == 'Windows':
     class MemByteAccessContext(object):
 
-        """Context for creating ByteAccesses which read and write to a specific process.
-
-        Usage:
-            context = MemByteAccessContext('process_name')
-            foo = context.ByteAccess(offset, size)
-        """
+        """Context for creating ByteAccesses which read and write to a specific process."""
 
         def __init__(self, process_name):
             from .windowsinterop import find_process
@@ -183,12 +173,7 @@ if p == 'Windows':
 elif p == 'Darwin':
     class MemByteAccessContext(object):
 
-        """Context for creating ByteAccesses which read and write to a specific process.
-
-        Usage:
-            context = MemByteAccessContext('process_name')
-            foo = context.ByteAccess(offset, size)
-        """
+        """Context for creating ByteAccesses which read and write to a specific process."""
 
         def __init__(self, process_name):
             raise NotImplementedError("Mac support not yet available")

@@ -21,9 +21,16 @@ def test_filebyteaccess():
     assert foo.read_bytes(0, 4) == b'asdf'
 
 def test_membyteaccess():
-    raise NotImplementedError()
+    context = byteaccess.MemByteAccessContext('halo')
+    foo = context.ByteAccess(0x6A8154, 4)
+    assert foo.read_all_bytes() == b'daeh'
+    foo.write_bytes(0, b'toof')
+    assert foo.read_all_bytes() == b'toof'
+    foo.write_bytes(0, b'daeh')
+    assert foo.read_all_bytes() == b'daeh'
 
 
 if __name__ == '__main__':
     test_filebyteaccess()
+    test_membyteaccess()
     print("Tests successful!")
