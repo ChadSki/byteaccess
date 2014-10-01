@@ -29,6 +29,7 @@ Example usage:
 __version__ = '0.3.0'
 
 import abc
+import platform
 
 
 class BaseByteAccess(metaclass=abc.ABCMeta):
@@ -119,64 +120,59 @@ class FileByteAccessContext(object):
         self.file_handle.close()
 
 
-import platform
+
+class WinMemByteAccessContext(object):
+
+    """Context for creating ByteAccesses which read and write to a specific process."""
+
+    def __init__(self, process_name):
+        from .windowsinterop import find_process
+        from ctypes import (byref, c_ulong, c_char_p, create_string_buffer, windll)
+        k32 = windll.kernel32
+
+        PROCESS_ALL_ACCESS = 0x1F0FFF
+        process_entry = find_process((process_name + '.exe').encode('ascii'))
+        self.process = k32.OpenProcess(PROCESS_ALL_ACCESS, False,
+                                       process_entry.th32ProcessID)
+
+        class WinMemByteAccess(BaseByteAccess):
+
+            """Read/write bytes to a specific process's memory."""
+
+            def _read_bytes(slf, offset, size):
+                address = slf.offset + offset
+                buf = create_string_buffer(size)
+                bytesRead = c_ulong(0)
+                if k32.ReadProcessMemory(self.process, address,
+                                         buf, size, byref(bytesRead)):
+                    return bytes(buf)
+                else:
+                    raise RuntimeError("Failed to read memory")
+
+            def _write_bytes(slf, offset, to_write):
+                address = slf.offset + offset
+                buf = c_char_p(to_write)
+                size = len(to_write)
+                bytesWritten = c_ulong(0)
+                if k32.WriteProcessMemory(self.process, address,
+                                          buf, size, byref(bytesWritten)):
+                    return
+                else:
+                    raise RuntimeError("Failed to write memory")
+
+        self.ByteAccess = WinMemByteAccess
+
+    def close(self):
+        """Close the process and invalidate all child ByteAccesses."""
+        from ctypes import windll
+        windll.kernel32.CloseHandle(self.process)
+
 
 p = platform.system()
-
 if p == 'Windows':
-    class MemByteAccessContext(object):
-
-        """Context for creating ByteAccesses which read and write to a specific process."""
-
-        def __init__(self, process_name):
-            from .windowsinterop import find_process
-            from ctypes import (byref, c_ulong, c_char_p, create_string_buffer, windll)
-            k32 = windll.kernel32
-
-            PROCESS_ALL_ACCESS = 0x1F0FFF
-            process_entry = find_process((process_name + '.exe').encode('ascii'))
-            self.process = k32.OpenProcess(PROCESS_ALL_ACCESS, False,
-                                           process_entry.th32ProcessID)
-
-            class WinMemByteAccess(BaseByteAccess):
-
-                """Read/write bytes to a specific process's memory."""
-
-                def _read_bytes(slf, offset, size):
-                    address = slf.offset + offset
-                    buf = create_string_buffer(size)
-                    bytesRead = c_ulong(0)
-                    if k32.ReadProcessMemory(self.process, address,
-                                             buf, size, byref(bytesRead)):
-                        return bytes(buf)
-                    else:
-                        raise RuntimeError("Failed to read memory")
-
-                def _write_bytes(slf, offset, to_write):
-                    address = slf.offset + offset
-                    buf = c_char_p(to_write)
-                    size = len(to_write)
-                    bytesWritten = c_ulong(0)
-                    if k32.WriteProcessMemory(self.process, address,
-                                              buf, size, byref(bytesWritten)):
-                        return
-                    else:
-                        raise RuntimeError("Failed to write memory")
-
-            self.ByteAccess = WinMemByteAccess
-
-        def close(self):
-            """Close the process and invalidate all child ByteAccesses."""
-            from ctypes import windll
-            windll.kernel32.CloseHandle(self.process)
-
+    MemByteAccessContext = WinMemByteAccessContext
 elif p == 'Darwin':
-    class MemByteAccessContext(object):
-
-        """Context for creating ByteAccesses which read and write to a specific process."""
-
-        def __init__(self, process_name):
-            raise NotImplementedError("Mac support not yet available")
-
+    # MemByteAccessContext = MacMemByteAccessContext
+    raise NotImplementedError("Mac support not yet available")
 else:
     raise NotImplementedError("Unsupported platform.")
