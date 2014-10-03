@@ -5,6 +5,7 @@
 # license as detailed in the LICENSE file.
 
 import abc
+from struct import pack, unpack
 
 
 class BaseByteAccess(metaclass=abc.ABCMeta):
@@ -19,6 +20,19 @@ class BaseByteAccess(metaclass=abc.ABCMeta):
         """
         self.offset = offset
         self.size = size
+
+    # This abstract class is defined such that subclasses only need to
+    # implement the following two methods:
+
+    @abc.abstractmethod
+    def _read_bytes(self, offset, size):
+        pass
+
+    @abc.abstractmethod
+    def _write_bytes(self, offset, to_write):
+        pass
+
+    # Bytestrings
 
     def read_bytes(self, offset, size):
         """Read a number of bytes from the source.
@@ -40,9 +54,9 @@ class BaseByteAccess(metaclass=abc.ABCMeta):
     def write_bytes(self, offset, to_write):
         """Write a bytestring to the source.
 
-        offset -- Relative offset within the ByteAccess
-        to_write -- The bytestring to write. If too large to write
-                    at the specified offset, throws ValueError.
+        offset -- Relative offset within the ByteAccess.
+        to_write -- The bytestring to write. If the bytestring is too long to
+                    write at the specified offset, raises ValueError.
         """
         if offset + len(to_write) > self.size:
             raise ValueError("Cannot write past end of ByteAccess. " +
@@ -51,13 +65,25 @@ class BaseByteAccess(metaclass=abc.ABCMeta):
 
         self._write_bytes(offset, to_write)
 
-    # This abstract class is defined such that subclasses only need to
-    # implement the following two methods:
+    # Numerics
 
-    @abc.abstractmethod
-    def _read_bytes(self, offset, size):
-        pass
-
-    @abc.abstractmethod
-    def _write_bytes(self, offset, to_write):
-        pass
+    def read_float32( self, offset): return unpack('<f', self.read_bytes(offset, 4))[0]
+    def read_float64( self, offset): return unpack('<d', self.read_bytes(offset, 8))[0]
+    def read_int8(    self, offset): return unpack('<b', self.read_bytes(offset, 1))[0]
+    def read_int16(   self, offset): return unpack('<h', self.read_bytes(offset, 2))[0]
+    def read_int32(   self, offset): return unpack('<i', self.read_bytes(offset, 4))[0]
+    def read_int64(   self, offset): return unpack('<q', self.read_bytes(offset, 8))[0]
+    def read_uint8(   self, offset): return unpack('<B', self.read_bytes(offset, 1))[0]
+    def read_uint16(  self, offset): return unpack('<H', self.read_bytes(offset, 2))[0]
+    def read_uint32(  self, offset): return unpack('<I', self.read_bytes(offset, 4))[0]
+    def read_uint64(  self, offset): return unpack('<Q', self.read_bytes(offset, 8))[0]
+    def write_float32(self, offset, data): self.write_bytes(offset, pack('<f', data))
+    def write_float64(self, offset, data): self.write_bytes(offset, pack('<d', data))
+    def write_int8(   self, offset, data): self.write_bytes(offset, pack('<b', data))
+    def write_int16(  self, offset, data): self.write_bytes(offset, pack('<h', data))
+    def write_int32(  self, offset, data): self.write_bytes(offset, pack('<i', data))
+    def write_int64(  self, offset, data): self.write_bytes(offset, pack('<q', data))
+    def write_uint8(  self, offset, data): self.write_bytes(offset, pack('<B', data))
+    def write_uint16( self, offset, data): self.write_bytes(offset, pack('<H', data))
+    def write_uint32( self, offset, data): self.write_bytes(offset, pack('<I', data))
+    def write_uint64( self, offset, data): self.write_bytes(offset, pack('<Q', data))
