@@ -6,15 +6,14 @@ A Python module which provides a common interface for reading or writing data to
 
 Open a file or process, accessing them the same way
 
-    from byteaccess import FileByteAccessContext,
-                           MemByteAccessContext
+    import byteaccess
 
     if location == 'file':
-        context = FileByteAccessContext('file.txt')
+        data_context = byteaccess.FileContext('file.txt')
     elif location == 'mem'
-        context = MemByteAccessContext('process')  #=> looks for 'process.exe' on Windows
-     
-    foo = context.ByteAccess(offset, size)
+        data_context = byteaccess.MemContext('process.exe')
+
+    foo = data_context.ByteAccess(offset, size)
     foo.write_bytes(0, b'somedata')
     foo.read_bytes(4, 4)  #=> b'data'
 
