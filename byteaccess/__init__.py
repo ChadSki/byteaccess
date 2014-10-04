@@ -18,7 +18,7 @@ Example usage:
     if location == 'file':
         data_context = byteaccess.FileContext('file.txt')
     elif location == 'mem'
-        data_context = byteaccess.MemContext('process.exe')
+        data_context = byteaccess.WinMemContext('process.exe')
 
     foo = data_context.ByteAccess(offset, size)
     foo.write_bytes(0, b'somedata')

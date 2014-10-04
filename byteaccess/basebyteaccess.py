@@ -87,3 +87,31 @@ class BaseByteAccess(metaclass=abc.ABCMeta):
     def write_uint16( self, offset, data): self.write_bytes(offset, pack('<H', data))
     def write_uint32( self, offset, data): self.write_bytes(offset, pack('<I', data))
     def write_uint64( self, offset, data): self.write_bytes(offset, pack('<Q', data))
+
+    # Strings
+
+    def read_ascii(self, offset, length, reverse=False):
+        buf = self.read_bytes(offset, length).decode('ascii')
+        return buf[::-1] if reverse else buf
+
+    def write_ascii(self, offset, length, reverse=False, data):
+        buf = data.encode('ascii')
+        self.write_bytes(offset, buf[::-1] if reverse else buf)
+
+    def read_asciiz(self, offset, maxlength):
+        buf = self.read_bytes(offset, maxlength).decode('ascii')
+        return buf[:buf.find('\0')]  # null-terminated
+
+    def write_asciiz(self, offset, maxlength, data):
+        buf = (data + '\0').encode('ascii')
+        self.write_bytes(offset, buf)
+
+    # TODO - should these be named 'utf-16z' to indicate they are null-terminated?
+
+    def read_utf16(self, offset, maxlength):
+        buf = self.read_bytes(offset, maxlength).decode('utf-16')
+        return buf[:buf.find('\0')]  # null-terminated
+
+    def write_utf16(self, offset, maxlength, data):
+        buf = (data + '\0').encode('utf-16')
+        self.write_bytes(offset, buf)
