@@ -3,6 +3,7 @@
 #
 # This software is free and open source, released under the 2-clause BSD
 # license as detailed in the LICENSE file.
+"""Convenience functions for developing on Windows."""
 
 from ctypes import (byref, c_ulong, c_ulonglong, c_char, windll, sizeof, Structure)
 import platform
@@ -31,9 +32,10 @@ class ProcessEntry32(Structure):
 
 
 def find_process(name):
-    """Return the first running process found with the specified name.
+    """Find a process by name.
 
-    Raises a RuntimeError if the process cannot be found, or if searching fails.
+    In the case of duplicates, returns the first process found. Exceptions if
+    no process was found which matches the given name.
     """
     # get a snapshot of running processes
     TH32CS_SNAPPROCESS = 0x00000002
